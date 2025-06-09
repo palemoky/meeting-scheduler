@@ -1,0 +1,28 @@
+# macOS system files
+.DS_Store
+
+# IDE/editor settings
+.vscode/
+.idea/
+*.swp
+
+# Build outputs and executables
+*.exe
+*.out
+*.test
+
+# Dependency directories
+vendor/
+
+# Database files
+*.db
+*.sqlite
+
+# Log and temporary files
+*.log
+*.tmp
+
+# Distribution/build folders
+/bin/
+/build/
+/dist/
