@@ -35,11 +35,35 @@ CREATE TABLE employees (
     status enum_employees_status NOT NULL DEFAULT 'probation'
 );
 
+CREATE TABLE office_area_countries(
+    id SERIAL PRIMARY KEY,
+    name VARCHAR(50) NOT NULL,
+);
+
+CREATE TABLE office_area_provinces(
+    id SERIAL PRIMARY KEY,
+    name VARCHAR(50) NOT NULL,
+    country_id INTEGER REFERENCES office_area_countries(id)
+);
+
+CREATE TABLE office_area_cities(
+    id SERIAL PRIMARY KEY,
+    name VARCHAR(50) NOT NULL,
+    province_id INTEGER REFERENCES office_area_cities(id)
+);
+
+CREATE TABLE office_area(
+    id SERIAL PRIMARY KEY,
+    name VARCHAR(50) NOT NULL,
+    city INTEGER REFERENCES office_area_cities(id),
+    geom GEOGRAPHY(Point, 4326) NOT NULL
+);
+
 CREATE TABLE rooms(
     id SERIAL PRIMARY KEY,
+    office_area_id INTEGER NOT NULL REFERENCES office_area(id),
     room_number VARCHAR(10) UNIQUE NOT NULL,
     name VARCHAR(50) NOT NULL,
-    geom GEOGRAPHY(Point, 4326) NOT NULL,
     floor smallint NOT NULL,
     capacity smallint NOT NULL,
     status enum_room_status NOT NULL DEFAULT 'available',
