@@ -35,33 +35,26 @@ CREATE TABLE employees (
     status enum_employees_status NOT NULL DEFAULT 'probation'
 );
 
-CREATE TABLE office_area_countries(
-    id SERIAL PRIMARY KEY,
-    name VARCHAR(50) NOT NULL,
+CREATE TABLE regions (
+    id SERIAL PRIMARY KEY, -- Use a meaningless auto-increment ID as a stable internal primary key
+    code VARCHAR(50) UNIQUE, -- Store official and heterogeneous administrative codes (e.g., '110108', '90210', 'SW1A 0AA')
+    name VARCHAR(100) NOT NULL,
+    parent_id INTEGER REFERENCES regions(id), -- Self-referencing foreign key to build a global hierarchy tree
+    level SMALLINT NOT NULL CHECK (level >= 0) -- 0:Global, 1:Country, 2:Province/State, etc.
 );
+COMMENT ON TABLE regions IS 'A unified, hierarchical table for all administrative and geographical areas, worldwide.';
 
-CREATE TABLE office_area_provinces(
+CREATE TABLE office_areas(
     id SERIAL PRIMARY KEY,
     name VARCHAR(50) NOT NULL,
-    country_id INTEGER REFERENCES office_area_countries(id)
-);
-
-CREATE TABLE office_area_cities(
-    id SERIAL PRIMARY KEY,
-    name VARCHAR(50) NOT NULL,
-    province_id INTEGER REFERENCES office_area_cities(id)
-);
-
-CREATE TABLE office_area(
-    id SERIAL PRIMARY KEY,
-    name VARCHAR(50) NOT NULL,
-    city INTEGER REFERENCES office_area_cities(id),
+    region_id INTEGER NOT NULL REFERENCES regions(id),
+    street_address VARCHAR(255) NOT NULL,
     geom GEOGRAPHY(Point, 4326) NOT NULL
 );
 
 CREATE TABLE rooms(
     id SERIAL PRIMARY KEY,
-    office_area_id INTEGER NOT NULL REFERENCES office_area(id),
+    office_area_id INTEGER NOT NULL REFERENCES office_areas(id),
     room_number VARCHAR(10) UNIQUE NOT NULL,
     name VARCHAR(50) NOT NULL,
     floor smallint NOT NULL,
@@ -99,5 +92,8 @@ CREATE TABLE meeting_participants (
 -- ----------------------------
 -- Indexes for performance
 -- ----------------------------
+CREATE INDEX idx_regions_parent_id ON regions (parent_id);
+CREATE INDEX idx_office_areas_region_id ON office_areas (region_id);
+CREATE INDEX idx_rooms_office_area_id ON rooms (office_area_id);
 CREATE INDEX idx_meetings_time ON meetings (room_id, start_time, end_time);
 CREATE INDEX idx_meeting_participants_employee ON meeting_participants (employee_id);
